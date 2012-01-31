@@ -1,0 +1,91 @@
+= Sortable
+
+Sortable is a plugin to allow easy sorting & pagination of active record models on (selected) attributes.
+
+
+== Usage
+In your controller...
+
+sortable_table User
+
+This will create a sortable table over all your objects and display all columns.
+The simplest way to trim down the columns to display is to pass in a parameter specifying which columns
+on your object you'd like to display:
+
+sortable_table User, :display_columns => ['id', 'email', 'name', 'state', 'created_at']
+
+This will show the same sortable, searchable, paginated table with only these columns
+
+If you need a bit more control over how the objects are fetchd and displayed this is
+the next simplest example:
+
+Override the index action in your controller:
+
+def index
+get_sorted_objects(params)        
+end
+
+In your index action template (within the same controller) put in a helper call to show a sortable table. You can
+create your own table partial to be used to display the objects. See the sortable/views/sortable/_table.html.erb 
+(which is the default template used by the plugin) for an example. 
+
+<%= sortable_table %>
+
+The view method will automatically generate a paginated, sortable table for the class type declared in the controller
+
+optional_params:
+
+:per_page - Number of records to show per page. Default is 10
+
+The next section deals with how to change what's displayed in the table. The first and simplest option is :display_columns.
+The more flexible option is to use :table_headings and :sort_map. First we'll go over the simpler option.
+
+:display_columns - Specifies which columns that you'd like to display in the table. 
+
+For more flexibility you can use :table_headings and :sort_map. You would most likely use this when you want to display 
+attributes from more than one object in the same table or if you need more flexibility with regards to sort rules. 
+:table_headings - The table heading label and sort key. Default is all the column names for the given class
+:sort_map - The mapping between the sort key and the table.column to sort on. Default is all the columns for the given class
+:include_relations - Relations to include if you choose to display a column in a related object's table
+
+:default_sort - The default sorting column and direction when displaying the table without any sort params. Default is 'id DESC'
+
+Note: You *must* override both :table_headings and :sort_map if you do choose to override so that 
+the contents of the column headings match up with the contents of the sort_map they associate with.
+Also if you override :default_sort you'll need to change the :table_headings and :sort_map if the new :default_sort
+column doesn't currently reside within the :table_heading and :sort_map collections
+
+Example of modifying :table_headings or :sort_map :
+ :table_headings => [['Name', 'name'], ['Status', 'status']]
+ :sort_map =>  {'name' => ['users.name'], 
+                'status' => ['users.status']}
+
+ Note that both 'name' and 'status' are sort keys that map to both the table heading label and the 
+ database table.column combination that the heading refers to. 
+ 
+ Also note that :default_sort now needs to change as well since the table no longer contains the :default_sort
+ column of 'id':
+ 
+ :default_sort => ['name', 'DESC'] 
+ 
+Example of modifying :table_headings to include a column from a related object:
+ :table_headings => [['Name', 'name'], ['Status', 'status'], ['Role', 'role']]
+ :sort_map =>  {'name' => ['users.name'], 
+                'status' => ['users.status'],
+                'role' => ['roles.role']}
+ 
+ Note that we've now added 'roles.role' to the list of columns to display and sort on. In order to
+ make the find work properly we also need to include the related object, so we pass in the following param:
+ :include_relations => [:role]
+ 
+ Perhaps we want to sort by role ascending by default as well. We'd pass the param value:
+ :default_sort => ['role', 'ASC']               
+ 
+ and the table is now sortable by a related object's column and is the default sort value for the table.
+
+Search. You can specify what columns are searchable on your objects as follows:
+ :search_array => ['cablecar_users.username', 'cablecar_users.name']
+
+Now search queries will only search username and name for users. By default search is enabled for all columns
+that are being displayed in the table. This allows you to expand or constrain those values.
+      

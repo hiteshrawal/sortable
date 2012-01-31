@@ -1,0 +1,29 @@
+Testing
+==============
+
+Tests are written with Shoulda on top of Test::Unit and Factory Girl is used instead of fixtures. Tests are run using rake.
+
+MySQL
+=======
+
+1. Create a new Rails app.
+2. Install acts_as_sortable as a plugin.
+3. Copy the database config within the plugin:
+    cp test/database.yml.example test/database.yml
+4. Create a database as specified in test/database.yml.
+5. Run the tests:
+    rake test
+
+
+Coverage
+=======
+
+Test coverage can be calculated using Rcov. Make sure you have the rcov gem installed.
+
+Again in the acts_as_sortable directory:
+
+rake rcov:gen   # For mysql
+
+The coverage will now be available in the test/coverage directory.
+
+rake rcov:clobber will delete the coverage directory.
