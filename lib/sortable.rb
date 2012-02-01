@@ -267,7 +267,7 @@ module Sortable
           if params.has_key?(key)
             if !params[key].blank?
               conditions += ' and ' unless conditions.blank?
-              column_type = get_column_type(key)
+              column_type = get_column_type(value)
               if column_type == :string
                 conditions += value + " ILIKE  '%#{params[key]}%'"
               elsif column_type == :datetime
@@ -366,19 +366,23 @@ module Sortable
         return mapKey
       end
 
-      def get_column_type(key)
-        key_array = key.split('.')
-        klass = get_column_class(key_array)
+      def get_column_type(value)
+        value_array = value.split('.')
         data_type = :string
-        klass.columns.each do |column|
-          data_type = column.type if column.name.eql?(key_array.last)
+        begin
+          klass = get_column_class(value_array)
+          klass.columns.each do |column|
+            data_type = column.type if column.name.eql?(value_array.last)
+          end
+          data_type
+        rescue
+          data_type
         end
-        data_type
       end
 
-      def get_column_class(key_array)
-        if key_array.size > 1
-          key_array[key_array.size-2].camelize.constantize
+      def get_column_class(value_array)
+        if value_array.size > 1
+          value_array[value_array.size-2].singularize.camelize.constantize
         else
           sortable_class
         end
